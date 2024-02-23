@@ -1,0 +1,36 @@
+#include "strSHA2.h"
+#include <dirent.h>
+#include <sys/stat.h>
+
+// DATA STRUCTURES
+
+// DICTIONARY LIKE STRUCT THAT LINKS A FILENAME TO A PATH
+typedef struct dict {
+    char *name;
+    char *path;
+    struct dict *next;
+} dict;
+
+
+// FUNCTION PROTOTYPES
+
+// CHECK IF A FILE IS HIDDEN
+extern bool is_hidden_file(const char *name);
+
+// HASH FUNCTION TO DETRMINE WHAT BUCKET A FILE SHOULD GO INTO
+extern unsigned long hash_function(char *str);
+
+// ADD A FILE TO THE HASH TABLE
+extern void add_file_to_hash_table(hash_table *ht, file *f);
+
+// READ THE DIRECTORY AND ADD FILES TO THE HASH TABLE
+extern void read_directory(char *path, hash_table *ht, option_list *ol);
+
+// GET THE FILES DUPLICATE TO GIVEN HASH; RETURN ARRAY OF FILES
+extern file *get_files_with_hash(hash_table *ht, char *hash);
+
+// GET THE FILES DUPLICATE TO GIVEN FILE; RETURN ARRAY OF FILES
+extern file *get_files_with_name(hash_table *ht, char *name);
+
+// PRINT THE ARRAY OF FILES
+extern void print_file_array(file *f);
