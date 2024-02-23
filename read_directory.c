@@ -32,7 +32,51 @@ void add_file_to_hash_table(hash_table *ht, file *f) {
     ht->table[index]->num_files_in_bucket++;
 }
 
-void read_directory(char *path, hash_table *ht, option_list *ol) {
+void add_file_to_dict(dict *d, file *f) {
+    if(d->name == NULL) {
+        d->name = strdup(f->name);
+        CHECK_ALLOC(d->name);
+        d->path = strdup(f->path);
+        CHECK_ALLOC(d->path);
+        d->hash = strdup(f->hash);
+        CHECK_ALLOC(d->hash);
+        d->next = NULL;
+    } else {
+        dict *d1 = malloc(sizeof(dict));
+        CHECK_ALLOC(d1);
+        d1->name = strdup(f->name);
+        CHECK_ALLOC(d1->name);
+        d1->path = strdup(f->path);
+        CHECK_ALLOC(d1->path);
+        d1->hash = strdup(f->hash);
+        CHECK_ALLOC(d1->hash);
+        d1->next = d->next;
+        d->next = d1;
+    }
+
+}
+
+void print_dict(dict *d) {
+    printf("DICTIONARY:\n\n");
+    while(d != NULL) {
+        printf("file_name: %s\n", d->name);
+        printf("file_path: %s\n", d->path);
+        printf("file_hash: %s\n", d->hash);
+        printf("\n");
+        d = d->next;
+    }
+}
+
+void free_dict(dict *d) {
+    dict *d1;
+    while(d != NULL) {
+        d1 = d;
+        d = d->next;
+        free(d1);
+    }
+}
+
+void read_directory(char *path, hash_table *ht, option_list *ol, dict *d) {
     DIR *dir;
     struct dirent *entry;
 
@@ -58,7 +102,7 @@ void read_directory(char *path, hash_table *ht, option_list *ol) {
             }
             // recursive call to read_directory if -r option is set
             if(get_option(ol, 'r') != NULL) {
-                read_directory(fullpath, ht, ol);
+                read_directory(fullpath, ht, ol, d);
             }
         } 
         else if (S_ISREG(sb.st_mode))
@@ -69,6 +113,9 @@ void read_directory(char *path, hash_table *ht, option_list *ol) {
             }
             file *f = new_file(entry->d_name, fullpath);
             add_file_to_hash_table(ht, f);
+            if(get_option(ol, 'l') != NULL || get_option(ol, 'f') != NULL){
+                add_file_to_dict(d, f);    
+            }        
         }
     }
     
@@ -91,12 +138,22 @@ file *get_files_with_hash(hash_table *ht, char *hash) {
     return files;
 }
 
-// file *get_files_with_name(hash_table *ht, char *name) {
-//     // how do i get path from name?
-    
-    
+file *get_file_from_dict(dict *d, char *name) {
+    while(d != NULL) {
+        if(strcmp(d->name, name) == 0) {
+            file *f = new_file(d->name, d->path);
+            f->hash = d->hash;
+            return f;
+        }
+        d = d->next;
+    }
+    return NULL;
+}
 
-// }
+file *get_files_with_name(hash_table *ht, char *name, dict *d) {
+    file *f = get_file_from_dict(d, name);
+    return get_files_with_hash(ht, f->hash);
+}
 
 void print_file_array(file *f) {
     printf("-------------------------------------------------\n");

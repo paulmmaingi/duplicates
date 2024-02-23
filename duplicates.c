@@ -77,10 +77,11 @@ int main(int argc, char *argv[]) {
         
     
     hash_table *ht = new_hash_table(5); // prime number avoids collisions
+    dict *d = malloc(sizeof(dict));
 
     // for loop to read all directories provided
     for(int i = optind; i < argc; i++) {
-        read_directory(argv[i], ht, ol);
+        read_directory(argv[i], ht, ol, d);
     }
     if(get_option(ol, 'q') == NULL && get_option(ol, 'd') == NULL && get_option(ol, 'f') == NULL && get_option(ol, 'l') == NULL && get_option(ol, 'x') == NULL) {
         print_hash_table(ht);
@@ -91,8 +92,15 @@ int main(int argc, char *argv[]) {
             print_file_array(f);
         }
     }
+    if(get_option(ol, 'f') != NULL) {
+        for(int i = 0; i < get_option(ol, 'f')->num_optionargs; i++) {
+            file *f = get_files_with_name(ht, get_option(ol, 'f')->optionargs[i], d);
+            print_file_array(f);
+        }
+    }
   
-    
+
+    free_dict(d);
     free_hash_table(ht);
     free_option_list(ol);
     return 0;

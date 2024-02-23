@@ -4,10 +4,11 @@
 
 // DATA STRUCTURES
 
-// DICTIONARY LIKE STRUCT THAT LINKS A FILENAME TO A PATH
+// DICTIONARY LIKE STRUCT THAT LINKS A FILENAME TO A PATH AND HASH
 typedef struct dict {
     char *name;
     char *path;
+    char *hash;
     struct dict *next;
 } dict;
 
@@ -24,13 +25,25 @@ extern unsigned long hash_function(char *str);
 extern void add_file_to_hash_table(hash_table *ht, file *f);
 
 // READ THE DIRECTORY AND ADD FILES TO THE HASH TABLE
-extern void read_directory(char *path, hash_table *ht, option_list *ol);
+extern void read_directory(char *path, hash_table *ht, option_list *ol, dict *d);
 
 // GET THE FILES DUPLICATE TO GIVEN HASH; RETURN ARRAY OF FILES
 extern file *get_files_with_hash(hash_table *ht, char *hash);
 
 // GET THE FILES DUPLICATE TO GIVEN FILE; RETURN ARRAY OF FILES
-extern file *get_files_with_name(hash_table *ht, char *name);
+extern file *get_files_with_name(hash_table *ht, char *name, dict *d);
 
 // PRINT THE ARRAY OF FILES
 extern void print_file_array(file *f);
+
+// ADD FILE INFO TO DICTIONARY
+extern void add_file_to_dict(dict *d, file *f);
+
+// PRINT THE DICTIONARY
+extern void print_dict(dict *d);
+
+// FREE THE MEMORY ALLOCATED FOR THE DICTIONARY
+extern void free_dict(dict *d);
+
+// GET FILE INFO FROM DICTIONARY
+extern file *get_file_from_dict(dict *d, char *name);
