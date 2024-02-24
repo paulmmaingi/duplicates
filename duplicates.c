@@ -1,5 +1,5 @@
 #include "duplicates.h"
-// help, recursive, hidden, quiet. need to add file, hash, list, delete also handle collisions in hash table
+// help, recursive, hidden, quiet, file, hash need to add list, delete also handle collisions in hash table
 struct option long_options[] = {
     {"help", no_argument, NULL, 'h'}, 
     {"recursive", no_argument, NULL, 'r'},
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
             get_files_with_name(ht, get_option(ol, 'f')->optionargs[i], d);
         }
     }
-  
+
 
     free_dict(d);
     free_hash_table(ht);
