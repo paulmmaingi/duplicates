@@ -31,7 +31,7 @@ extern void read_directory(char *path, hash_table *ht, option_list *ol, dict *d)
 extern file *get_files_with_hash(hash_table *ht, char *hash);
 
 // GET THE FILES DUPLICATE TO GIVEN FILE; RETURN ARRAY OF FILES
-extern file *get_files_with_name(hash_table *ht, char *name, dict *d);
+extern void get_files_with_name(hash_table *ht, char *name, dict *d);
 
 // PRINT THE ARRAY OF FILES
 extern void print_file_array(file *f);
@@ -45,5 +45,5 @@ extern void print_dict(dict *d);
 // FREE THE MEMORY ALLOCATED FOR THE DICTIONARY
 extern void free_dict(dict *d);
 
-// GET FILE INFO FROM DICTIONARY
-extern file *get_file_from_dict(dict *d, char *name);
+// GET FILE INFO FROM DICTIONARY - MIGHT HAVE MULTIPLE FILES WITH SAME NAME, RETURN ARRAY OF FILES
+extern file *get_files_from_dict(dict *d, char *name);

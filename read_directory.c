@@ -138,21 +138,27 @@ file *get_files_with_hash(hash_table *ht, char *hash) {
     return files;
 }
 
-file *get_file_from_dict(dict *d, char *name) {
+file *get_files_from_dict(dict *d, char *name) {
+    file *files = NULL;
     while(d != NULL) {
         if(strcmp(d->name, name) == 0) {
             file *f = new_file(d->name, d->path);
             f->hash = d->hash;
-            return f;
+            f->next = files;
+            files = f;
         }
         d = d->next;
     }
-    return NULL;
+    return files;
 }
 
-file *get_files_with_name(hash_table *ht, char *name, dict *d) {
-    file *f = get_file_from_dict(d, name);
-    return get_files_with_hash(ht, f->hash);
+void get_files_with_name(hash_table *ht, char *name, dict *d) {
+    file *files = get_files_from_dict(d, name);
+    file *f = files;
+    while(f != NULL) {
+        print_file_array(get_files_with_hash(ht, f->hash));
+        f = f->next;
+    }    
 }
 
 void print_file_array(file *f) {

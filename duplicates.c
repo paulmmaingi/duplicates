@@ -94,8 +94,7 @@ int main(int argc, char *argv[]) {
     }
     if(get_option(ol, 'f') != NULL) {
         for(int i = 0; i < get_option(ol, 'f')->num_optionargs; i++) {
-            file *f = get_files_with_name(ht, get_option(ol, 'f')->optionargs[i], d);
-            print_file_array(f);
+            get_files_with_name(ht, get_option(ol, 'f')->optionargs[i], d);
         }
     }
   
