@@ -97,6 +97,9 @@ int main(int argc, char *argv[]) {
             get_files_with_name(ht, get_option(ol, 'f')->optionargs[i], d);
         }
     }
+    if(get_option(ol, 'l') != NULL) {
+        list_duplicates(d, ht);
+    }
 
 
     free_dict(d);

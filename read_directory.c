@@ -168,3 +168,19 @@ void print_file_array(file *f) {
         f = f->next;
     }
 }
+
+void list_duplicates(dict *d, hash_table *ht) {
+    dict *d1 = d;
+    while(d1 != NULL) {
+        file *f = get_files_with_hash(ht, d1->hash);
+        if(f->next != NULL) {
+            printf("DUPLICATES: ");
+            while(f != NULL) {
+                printf("%s ", f->path);
+                f = f->next;
+            }
+            printf("\n");
+        }
+        d1 = d1->next;
+    }
+}

@@ -47,3 +47,6 @@ extern void free_dict(dict *d);
 
 // GET FILE INFO FROM DICTIONARY - MIGHT HAVE MULTIPLE FILES WITH SAME NAME, RETURN ARRAY OF FILES
 extern file *get_files_from_dict(dict *d, char *name);
+
+// LIST ALL DUPLICATE FILES - ONLY IF FILE IS A DUPLICATE THEN LIST THE DUPLICATES IN ONE LINE
+extern void list_duplicates(dict *d, hash_table *ht);
