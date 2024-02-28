@@ -12,6 +12,11 @@ typedef struct dict {
     struct dict *next;
 } dict;
 
+// LIST LIKE STRUCT TO STORE ALREADY PRINTED HASHES
+typedef struct printed_hashes {
+    char **hashes;
+    int num_hashes;
+} printed_hashes;
 
 // FUNCTION PROTOTYPES
 
@@ -50,3 +55,6 @@ extern file *get_files_from_dict(dict *d, char *name);
 
 // LIST ALL DUPLICATE FILES - ONLY IF FILE IS A DUPLICATE THEN LIST THE DUPLICATES IN ONE LINE
 extern void list_duplicates(dict *d, hash_table *ht);
+
+// CHECK IF A HASH IS IN THE PRINTED HASHES
+extern bool is_in_printed_hashes(printed_hashes *ph, char *hash);

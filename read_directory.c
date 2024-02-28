@@ -169,18 +169,41 @@ void print_file_array(file *f) {
     }
 }
 
+bool is_in_printed_hashes(printed_hashes *ph, char *hash) {
+    for(int i = 0; i < ph->num_hashes; i++) {
+        if(strcmp(ph->hashes[i], hash) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void list_duplicates(dict *d, hash_table *ht) {
+    printed_hashes *ph = malloc(sizeof(printed_hashes));
+    CHECK_ALLOC(ph);
+    ph->hashes = malloc(sizeof(char *));
+    CHECK_ALLOC(ph->hashes);
+    ph->num_hashes = 0;
     dict *d1 = d;
     while(d1 != NULL) {
-        file *f = get_files_with_hash(ht, d1->hash);
-        if(f->next != NULL) {
-            printf("DUPLICATES: ");
-            while(f != NULL) {
-                printf("%s ", f->path);
-                f = f->next;
+        if(!is_in_printed_hashes(ph, d1->hash)) {
+            file *f = get_files_with_hash(ht, d1->hash);
+            if(f->next != NULL) {
+                printf("DUPLICATES: ");
+                while(f != NULL) {
+                    printf("%s \t", f->path);
+                    f = f->next;
+                }
+                printf("\n");
+                ph->hashes = realloc(ph->hashes, (ph->num_hashes + 1) * sizeof(char *));
+                CHECK_ALLOC(ph->hashes);
+                ph->hashes[ph->num_hashes] = strdup(d1->hash);
+                CHECK_ALLOC(ph->hashes[ph->num_hashes]);
+                ph->num_hashes++;
             }
-            printf("\n");
         }
         d1 = d1->next;
     }
+    free(ph->hashes);
+    free(ph);
 }
