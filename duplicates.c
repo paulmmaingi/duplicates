@@ -1,5 +1,5 @@
 #include "duplicates.h"
-// help, recursive, hidden, quiet, file, hash need to add list, delete also handle collisions in hash table
+// help, recursive, hidden, quiet, file, hash, list need to add delete also handle collisions in hash table
 struct option long_options[] = {
     {"help", no_argument, NULL, 'h'}, 
     {"recursive", no_argument, NULL, 'r'},
