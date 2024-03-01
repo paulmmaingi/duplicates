@@ -2,7 +2,7 @@
 
 // FUNCTION DEFINITIONS
 
-file *new_file(char *name, char *path) {
+file *new_file(char *name, char *path, size_t size) {
     file *f = malloc(sizeof(file));
     CHECK_ALLOC(f);
     f->name = strdup(name);
@@ -10,6 +10,7 @@ file *new_file(char *name, char *path) {
     f->path = strdup(path);
     CHECK_ALLOC(f->path);
     f->hash = "";
+    f->size = size;
     f->next = NULL;
     return f;
 }
@@ -18,6 +19,7 @@ void print_file(file *f) {
     printf("file_name: %s\n", f->name);
     printf("file_path: %s\n", f->path);
     printf("file_hash: %s\n", f->hash);
+    printf("file_size: %ld bytes\n", f->size);
     if(f->next != NULL) {
         printf("next_file: %s\n", f->next->name);
     } else {
@@ -124,15 +126,17 @@ void add_option(option_list *ol, char flag, char *optionarg) {
 }
 
 void print_option_list(option_list *ol) {
-    printf("OPTIONS(%d):\n\n", ol->num_options);
-    for(int i = 0; i < ol->num_options; i++) {
-        printf("[%d]flag: %c\n", i+1, ol->options[i]->flag);
-        if(ol->options[i]->optionargs != NULL) {
-            for(int j = 0; j < ol->options[i]->num_optionargs; j++) {
-                printf("arg%d: %s\n", j+1, ol->options[i]->optionargs[j]);
+    if(ol->num_options > 0){
+        printf("OPTIONS(%d):\n\n", ol->num_options);
+        for(int i = 0; i < ol->num_options; i++) {
+            printf("[%d]flag: %c\n", i+1, ol->options[i]->flag);
+            if(ol->options[i]->optionargs != NULL) {
+                for(int j = 0; j < ol->options[i]->num_optionargs; j++) {
+                    printf("\targ%d: %s\n", j+1, ol->options[i]->optionargs[j]);
+                }
             }
+            printf("\n");
         }
-        printf("\n");
     }
 }
 

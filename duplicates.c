@@ -1,13 +1,13 @@
 #include "duplicates.h"
-// help, recursive, hidden, quiet, file, hash, list need to add delete also handle collisions in hash table
+// need to add delete also handle collisions in hash table and test and debug
 struct option long_options[] = {
-    {"help", no_argument, NULL, 'h'}, 
-    {"recursive", no_argument, NULL, 'r'},
-    {"hidden", no_argument, NULL, 'a'},
+    {"help", no_argument, NULL, 'h'},  // works
+    {"recursive", no_argument, NULL, 'r'}, // works
+    {"hidden", no_argument, NULL, 'a'}, // works
     {"quiet", no_argument, NULL, 'q'},
-    {"file", required_argument, NULL, 'f'},
-    {"hash", required_argument, NULL, 'd'},
-    {"list", no_argument, NULL, 'l'},
+    {"file", required_argument, NULL, 'f'}, // works
+    {"hash", required_argument, NULL, 'd'}, // works
+    {"list", no_argument, NULL, 'l'}, // works
     {"delete", no_argument, NULL, 'x'},
     {NULL, 0, NULL, 0}
 };
@@ -70,21 +70,19 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if(get_option(ol, 'q') == NULL && get_option(ol, 'd') == NULL && get_option(ol, 'f') == NULL && get_option(ol, 'l') == NULL && get_option(ol, 'x') == NULL){
-        print_option_list(ol);
-    }
-
-        
+    print_option_list(ol);
     
+
     hash_table *ht = new_hash_table(5); // prime number avoids collisions
-    dict *d = malloc(sizeof(dict));
+    dict *d = calloc(1, sizeof(dict));
 
     // for loop to read all directories provided
     for(int i = optind; i < argc; i++) {
         read_directory(argv[i], ht, ol, d);
     }
     if(get_option(ol, 'q') == NULL && get_option(ol, 'd') == NULL && get_option(ol, 'f') == NULL && get_option(ol, 'l') == NULL && get_option(ol, 'x') == NULL) {
-        print_hash_table(ht);
+        // print_hash_table(ht);
+        default_print(ht, d);
     }
     if(get_option(ol, 'd') != NULL) {
         for(int i = 0; i < get_option(ol, 'd')->num_optionargs; i++) {

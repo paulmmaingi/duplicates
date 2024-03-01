@@ -9,6 +9,7 @@ typedef struct dict {
     char *name;
     char *path;
     char *hash;
+    size_t size;
     struct dict *next;
 } dict;
 
@@ -23,7 +24,7 @@ typedef struct printed_hashes {
 // CHECK IF A FILE IS HIDDEN
 extern bool is_hidden_file(const char *name);
 
-// HASH FUNCTION TO DETRMINE WHAT BUCKET A FILE SHOULD GO INTO
+// HASH FUNCTION TO DETERMINE WHAT BUCKET A FILE SHOULD GO INTO
 extern unsigned long hash_function(char *str);
 
 // ADD A FILE TO THE HASH TABLE
@@ -53,8 +54,14 @@ extern void free_dict(dict *d);
 // GET FILE INFO FROM DICTIONARY - MIGHT HAVE MULTIPLE FILES WITH SAME NAME, RETURN ARRAY OF FILES
 extern file *get_files_from_dict(dict *d, char *name);
 
+// HELPER FUNCTION TO GET UNIQUE FILES
+extern file *get_unique_files(hash_table *ht, dict *d);
+
 // LIST ALL DUPLICATE FILES - ONLY IF FILE IS A DUPLICATE THEN LIST THE DUPLICATES IN ONE LINE
 extern void list_duplicates(dict *d, hash_table *ht);
 
 // CHECK IF A HASH IS IN THE PRINTED HASHES
 extern bool is_in_printed_hashes(printed_hashes *ph, char *hash);
+
+// DEFAULT PRINTING FUNCTION
+extern void default_print(hash_table *ht, dict *d);

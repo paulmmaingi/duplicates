@@ -22,6 +22,7 @@ typedef struct file {
     char *name;
     char *path;
     char *hash;
+    size_t size;
     struct file *next;
 } file;
 
@@ -58,7 +59,7 @@ typedef struct option_list{
 // FUNCTION PROTOTYPES
 
 // CREATE A NEW FILE STRUCTURE
-extern file *new_file(char *name, char *path);
+extern file *new_file(char *name, char *path, size_t size);
 
 // PRINT THE CONTENTS OF A FILE STRUCTURE
 extern void print_file(file *f);
