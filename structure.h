@@ -17,7 +17,7 @@ extern char *strdup(const char *s);
 
 // DATA STRUCTURES
 
-// FILE STRUCTURE
+// FILE STRUCTURE (NAME, PATH, HASH, SIZE, NEXT)
 typedef struct file {
     char *name;
     char *path;
@@ -35,13 +35,13 @@ typedef struct hash_bucket {
     int num_files_in_bucket;
 } hash_bucket;
 
-// HASH TABLE STRUCTURE
+// HASH TABLE STRUCTURE (SIZE, TABLE)
 typedef struct hash_table {
     int size;
     hash_bucket **table;
 } hash_table;
 
-// OPTIONS STRUCTURE
+// OPTIONS STRUCTURE (FLAG, OPTIONARGS, NUM_OPTIONARGS, NEXT)
 typedef struct option_struct {
     char flag;
     char **optionargs;
@@ -49,6 +49,7 @@ typedef struct option_struct {
     struct option_struct* next;
 } option_struct;
 
+// OPTION LIST STRUCTURE (OPTIONS, NUM_OPTIONS)
 typedef struct option_list{
     option_struct **options;
     int num_options;
@@ -79,7 +80,7 @@ extern void free_hash_table(hash_table *ht);
 // NEW OPTION_LIST
 extern option_list *new_option_list();
 
-// GET OPTION
+// GET OPTION FROM OPTION_LIST
 extern option_struct *get_option(option_list *ol, char flag);
 
 // ADD OPTION TO OPTION_LIST

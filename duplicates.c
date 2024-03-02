@@ -80,14 +80,16 @@ int main(int argc, char *argv[]) {
     for(int i = optind; i < argc; i++) {
         read_directory(argv[i], ht, ol, d);
     }
-    if(get_option(ol, 'q') == NULL && get_option(ol, 'd') == NULL && get_option(ol, 'f') == NULL && get_option(ol, 'l') == NULL && get_option(ol, 'x') == NULL) {
-        // print_hash_table(ht);
+    if(get_option(ol, 'q') == NULL && get_option(ol, 'd') == NULL && get_option(ol, 'f') == NULL && get_option(ol, 'l') == NULL){
         default_print(ht, d);
     }
     if(get_option(ol, 'd') != NULL) {
         for(int i = 0; i < get_option(ol, 'd')->num_optionargs; i++) {
             file *f = get_files_with_hash(ht, get_option(ol, 'd')->optionargs[i]);
-            print_file_array(f);
+            if(f != NULL){
+                printf("Files with hash: '%s'\n\n", get_option(ol, 'd')->optionargs[i]);
+                print_file_array(f);
+            }
         }
     }
     if(get_option(ol, 'f') != NULL) {

@@ -4,7 +4,7 @@
 
 // DATA STRUCTURES
 
-// DICTIONARY LIKE STRUCT THAT LINKS A FILENAME TO A PATH AND HASH
+// DICTIONARY LIKE STRUCT TO STORE FILE INFO IN ADDITION TO HASH_TABLE FOR QUICK LOOKUP (NAME, PATH, HASH, SIZE, NEXT)
 typedef struct dict {
     char *name;
     char *path;
@@ -13,7 +13,7 @@ typedef struct dict {
     struct dict *next;
 } dict;
 
-// LIST LIKE STRUCT TO STORE ALREADY PRINTED HASHES
+// LIST LIKE STRUCT TO STORE ALREADY PRINTED HASHES (HASHES, NUM_HASHES)
 typedef struct printed_hashes {
     char **hashes;
     int num_hashes;
@@ -30,17 +30,20 @@ extern unsigned long hash_function(char *str);
 // ADD A FILE TO THE HASH TABLE
 extern void add_file_to_hash_table(hash_table *ht, file *f);
 
-// READ THE DIRECTORY AND ADD FILES TO THE HASH TABLE
+// READ THE DIRECTORY AND ADD FILES TO THE HASH TABLE AND DICTIONARY
 extern void read_directory(char *path, hash_table *ht, option_list *ol, dict *d);
 
 // GET THE FILES DUPLICATE TO GIVEN HASH; RETURN ARRAY OF FILES
 extern file *get_files_with_hash(hash_table *ht, char *hash);
 
-// GET THE FILES DUPLICATE TO GIVEN FILE; RETURN ARRAY OF FILES
+// GET THE FILES DUPLICATE TO GIVEN FILE; PRINTING THEM IN FUNCTION
 extern void get_files_with_name(hash_table *ht, char *name, dict *d);
 
-// PRINT THE ARRAY OF FILES
+// PRINT AN ARRAY OF FILES
 extern void print_file_array(file *f);
+
+// REMOVE A FILE FROM A FILE ARRAY
+extern file *remove_file_from_array(file *files, char *path);
 
 // ADD FILE INFO TO DICTIONARY
 extern void add_file_to_dict(dict *d, file *f);

@@ -38,14 +38,11 @@ hash_table *new_hash_table(int size) {
     hash_table *ht = malloc(sizeof(hash_table));
     CHECK_ALLOC(ht);
     ht->size = size;
-    ht->table = malloc(size * sizeof(hash_bucket *));
+    ht->table = calloc(size, sizeof(hash_bucket *));
     CHECK_ALLOC(ht->table);
     for(int i = 0; i < size; i++) {
-        ht->table[i] = malloc(sizeof(hash_bucket));
+        ht->table[i] = calloc(1, sizeof(hash_bucket));
         CHECK_ALLOC(ht->table[i]);
-        ht->table[i]->head = NULL;
-        ht->table[i]->tail = NULL;
-        ht->table[i]->num_files_in_bucket = 0;
     }
     return ht;
 }
@@ -97,46 +94,44 @@ option_struct *get_option(option_list *ol, char flag) {
 }
 
 void add_option(option_list *ol, char flag, char *optionarg) {
-    if(get_option(ol, flag) != NULL) {
-        if(optionarg != NULL) {
-            get_option(ol, flag)->optionargs = realloc(get_option(ol, flag)->optionargs, (get_option(ol, flag)->num_optionargs + 1) * sizeof(char *));
-            CHECK_ALLOC(get_option(ol, flag)->optionargs);
-            get_option(ol, flag)->optionargs[get_option(ol, flag)->num_optionargs] = strdup(optionarg);
-            CHECK_ALLOC(get_option(ol, flag)->optionargs[get_option(ol, flag)->num_optionargs]);
-            get_option(ol, flag)->num_optionargs++;
-        }
-    } else {
-        ol->options = realloc(ol->options, (ol->num_options + 1) * sizeof(option_struct *));
-        CHECK_ALLOC(ol->options);
-        ol->options[ol->num_options] = malloc(sizeof(option_struct));
-        CHECK_ALLOC(ol->options[ol->num_options]);
-        ol->options[ol->num_options]->flag = flag;
-        if(optionarg != NULL) {
-            ol->options[ol->num_options]->optionargs = malloc(sizeof(char *));
-            CHECK_ALLOC(ol->options[ol->num_options]->optionargs);
-            ol->options[ol->num_options]->optionargs[0] = strdup(optionarg);
-            CHECK_ALLOC(ol->options[ol->num_options]->optionargs[0]);
-            ol->options[ol->num_options]->num_optionargs = 1;
-        } else {
-            ol->options[ol->num_options]->optionargs = NULL;
-            ol->options[ol->num_options]->num_optionargs = 0;
-        }
-        ol->num_options++;
+    // if the option already exists, add the optionarg to the optionargs array
+    option_struct *opt = get_option(ol, flag);
+    if(opt != NULL && optionarg != NULL) {
+        opt->optionargs = realloc(opt->optionargs, (opt->num_optionargs + 1) * sizeof(char *));
+        CHECK_ALLOC(opt->optionargs);
+        opt->optionargs[opt->num_optionargs] = strdup(optionarg);
+        CHECK_ALLOC(opt->optionargs[opt->num_optionargs]);
+        opt->num_optionargs++;
+        return;
     }
+    // option doesnt exist, create a new option
+    ol->options = realloc(ol->options, (ol->num_options + 1) * sizeof(option_struct *));
+    CHECK_ALLOC(ol->options);
+    ol->options[ol->num_options] = calloc(1, sizeof(option_struct));
+    CHECK_ALLOC(ol->options[ol->num_options]);
+    ol->options[ol->num_options]->flag = flag;
+    if(optionarg != NULL) {
+        ol->options[ol->num_options]->optionargs = malloc(sizeof(char *));
+        CHECK_ALLOC(ol->options[ol->num_options]->optionargs);
+        ol->options[ol->num_options]->optionargs[0] = strdup(optionarg);
+        CHECK_ALLOC(ol->options[ol->num_options]->optionargs[0]);
+        ol->options[ol->num_options]->num_optionargs = 1;
+    }
+    ol->num_options++;
 }
 
 void print_option_list(option_list *ol) {
     if(ol->num_options > 0){
         printf("OPTIONS(%d):\n\n", ol->num_options);
         for(int i = 0; i < ol->num_options; i++) {
-            printf("[%d]flag: %c\n", i+1, ol->options[i]->flag);
+            printf("%d. flag: %c\n", i+1, ol->options[i]->flag);
             if(ol->options[i]->optionargs != NULL) {
                 for(int j = 0; j < ol->options[i]->num_optionargs; j++) {
                     printf("\targ%d: %s\n", j+1, ol->options[i]->optionargs[j]);
                 }
             }
-            printf("\n");
         }
+        printf("--------------------------------------------------\n\n");
     }
 }
 
