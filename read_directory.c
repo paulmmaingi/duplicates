@@ -167,8 +167,9 @@ void get_files_with_name(hash_table *ht, char *name, dict *d) {
     file *f = files;
     while(f != NULL) {
         if(f->hash != NULL) {
-            printf("Files duplicate to: %s\n\n", f->path);
+            printf("Files duplicate to: %s\t (%ld)\n\n", f->path, f->inode);
             print_file_array(remove_file_from_array(get_files_with_hash(ht, f->hash), f->path));
+            printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
         }
         f = f->next;
     }    
@@ -202,13 +203,41 @@ file *remove_file_from_array(file *files, char *path) {
 }
 
 void print_file_array(file *f) {
-    // IMPLEMENT PRINTING INODE AND LINKED FILES SOMEHOW
-    while(f != NULL) {
-        printf("%s\n", f->path);
-        // print_file(f);
-        f = f->next;
+    int num_files = 0;
+    file *f2 = f;
+    while(f2 != NULL) {
+        num_files++;
+        f2 = f2->next;
     }
-    printf("-------------------------------------------------\n");
+    file *f1 = f;
+    ino_t *inode_array = calloc(num_files, sizeof(ino_t));
+    CHECK_ALLOC(inode_array);
+    int inode_count = 0;
+    while(f1 != NULL) {
+        bool found = false;
+        for(int i = 0; i < inode_count; i++) {
+            if(inode_array[i] == f1->inode) {
+                found = true;
+                break;
+            }
+        }
+        if(!found) {
+            inode_array[inode_count] = f1->inode;
+            inode_count++;
+        }
+        f1 = f1->next;
+    }
+    for(int i = 0; i < inode_count; i++) {
+        file *f2 = f;
+        while(f2 != NULL) {
+            if(f2->inode == inode_array[i]) {
+                printf("%s\t (%ld)\n", f2->path, f2->inode);
+            }
+            f2 = f2->next;
+        }
+        printf("-------------------------------------------------\n");
+    }
+    free(inode_array);
 }
 
 bool is_in_printed_hashes(printed_hashes *ph, char *hash) {
@@ -252,18 +281,23 @@ file *get_unique_files(hash_table *ht, dict *d) {
 }
 
 void list_duplicates(dict *d, hash_table *ht) {
+    int set = 1;
     file *unique_files = get_unique_files(ht, d);
     file *f = unique_files;
     while(f != NULL) {
         file *f1 = get_files_with_hash(ht, f->hash);
         // if there are duplicates for the file
         if(f1->next != NULL) {
-            printf("DUPLICATES: ");
-            while(f1 != NULL) {
-                printf("%s\t", f1->path);
-                f1 = f1->next;
+            printf("DUPLICATES set %d:\n\n", set);
+            if(f1 != NULL) {
+                print_file_array(f1);
             }
-            printf("\n");
+            // while(f1 != NULL) {
+            //     printf("%s (%ld)\n", f1->path, f1->inode);
+            //     f1 = f1->next;
+            // }
+            printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+            set++;
         }
         f = f->next;
     }

@@ -94,6 +94,7 @@ int main(int argc, char *argv[]) {
             if(f != NULL){
                 printf("Files with hash: '%s'\n\n", get_option(ol, 'd')->optionargs[i]);
                 print_file_array(f);
+                printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
             }
         }
     }
