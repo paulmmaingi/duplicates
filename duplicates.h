@@ -7,4 +7,4 @@
 extern void usage(char *progname);
 
 // PRINT DEBUGGING INFORMATION
-extern void debug(hash_table *ht, dict *d);
+extern void debug(hash_table *ht, dict *d, int opt);

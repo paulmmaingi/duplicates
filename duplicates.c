@@ -8,11 +8,11 @@ struct option long_options[] = {
     {"file", required_argument, NULL, 'f'}, // works
     {"hash", required_argument, NULL, 'd'}, // works
     {"list", no_argument, NULL, 'l'}, // works
-    {"delete", no_argument, NULL, 'x'},
+    {"minimise", no_argument, NULL, 'm'},
     {NULL, 0, NULL, 0}
 };
 
-#define OPTLIST "hraqf:d:lx"
+#define OPTLIST "hraqf:d:lm"
 
 void usage(char *progname) {
     fprintf(stderr, "Usage: %s [options] <directory1> <directory2> ...\n", progname);
@@ -24,13 +24,13 @@ void usage(char *progname) {
     fprintf(stderr, "  -f, --file <file>\tOnly search for files with the given name\n");
     fprintf(stderr, "  -d, --hash <hash>\tOnly search for files with the given hash\n");
     fprintf(stderr, "  -l, --list\t\tList all duplicate files\n");
-    fprintf(stderr, "  -x, --delete\t\tDelete all duplicate files\n");
+    fprintf(stderr, "  -m, --minimise\tMinimise the memory usage by hard linking duplicate files\n");
     exit(EXIT_FAILURE);
 }
 
-void debug(hash_table *ht, dict *d) {
-    print_hash_table(ht);
-    print_dict(d);
+void debug(hash_table *ht, dict *d, int opt) {
+    if(opt ==0) print_hash_table(ht);
+    if(opt ==1) print_dict(d);
 }
 
 
@@ -66,8 +66,8 @@ int main(int argc, char *argv[]) {
             case 'l':
                 add_option(ol, 'l', NULL);
                 break;
-            case 'x':
-                add_option(ol, 'x', NULL);
+            case 'm':
+                add_option(ol, 'm', NULL);
                 break;
             default:
                 usage(argv[0]);
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    print_option_list(ol);
+    // print_option_list(ol);
     
 
     hash_table *ht = new_hash_table(5); // prime number avoids collisions
@@ -85,8 +85,8 @@ int main(int argc, char *argv[]) {
     for(int i = optind; i < argc; i++) {
         read_directory(argv[i], ht, ol, d);
     }
-    if(get_option(ol, 'q') == NULL && get_option(ol, 'd') == NULL && get_option(ol, 'f') == NULL && get_option(ol, 'l') == NULL){
-        default_print(ht, d);
+    if(get_option(ol, 'd') == NULL && get_option(ol, 'f') == NULL && get_option(ol, 'l') == NULL && get_option(ol, 'm') == NULL){
+        default_print(ht, d, ol);
     }
     if(get_option(ol, 'd') != NULL) {
         for(int i = 0; i < get_option(ol, 'd')->num_optionargs; i++) {
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
         list_duplicates(d, ht);
     }
 
-    // debug(ht, d);
+    // debug(ht, d, 1);
 
     free_dict(d);
     free_hash_table(ht);

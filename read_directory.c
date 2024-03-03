@@ -202,6 +202,7 @@ file *remove_file_from_array(file *files, char *path) {
 }
 
 void print_file_array(file *f) {
+    // IMPLEMENT PRINTING INODE AND LINKED FILES SOMEHOW
     while(f != NULL) {
         printf("%s\n", f->path);
         // print_file(f);
@@ -269,15 +270,20 @@ void list_duplicates(dict *d, hash_table *ht) {
     free_file(unique_files);
 }
 
-void default_print(hash_table *ht, dict *d) {
+void default_print(hash_table *ht, dict *d, option_list *ol) {
+    int quiet = 0;
+    if(get_option(ol, 'q') != NULL) {
+        quiet = 1;
+    }
+
     // WORK OUT NUMBER OF FILES
     int num_files = 0;
 
     for(int i = 0; i<ht->size; i++) {\
         num_files += ht->table[i]->num_files_in_bucket;
     }
-    printf("Number of files found: %d\n", num_files);
-
+    quiet == 0 ? printf("Number of files found: %d\n", num_files) : 0;
+     
     // WORK OUT TOTAL SIZE OF FILES (ONLY INCLUDE HARD LINKED FILES ONCE)
     size_t total_size = 0;
     ino_t *inode_array = calloc(num_files, sizeof(ino_t));
@@ -300,7 +306,7 @@ void default_print(hash_table *ht, dict *d) {
         d1 = d1->next;
     }
     free(inode_array);
-    printf("Total size of files found: %ld bytes, %ld KB, %ld MB\n", total_size, total_size/1024, total_size/1024/1024);
+    quiet == 0 ? printf("Total size of files found: %ld bytes, %ld KB, %ld MB\n", total_size, total_size/1024, total_size/1024/1024) : 0;
     
     // WORK OUT NUMBER OF UNIQUE FILES, ADD TO UNIQUE FILES ARRAY
     file *unique_files = get_unique_files(ht, d);
@@ -314,8 +320,17 @@ void default_print(hash_table *ht, dict *d) {
         total_unique_size += f->size;
         f = f->next;
     }
-    printf("Number of unique files found: %d\n", num_unique_files);
-    printf("Total size of unique files found: %ld bytes, %ld KB, %ld MB\n", total_unique_size, total_unique_size/1024, total_unique_size/1024/1024);
+    quiet == 0 ? printf("Number of unique files found: %d\n", num_unique_files) : 0;
+    quiet == 0 ? printf("Total size of unique files found: %ld bytes, %ld KB, %ld MB\n", total_unique_size, total_unique_size/1024, total_unique_size/1024/1024) : 0;
+
+    // QUIET MODE
+    if(quiet == 1) {
+        if(num_files > num_unique_files) {
+            printf("Duplicate files found\n%ld bytes wasted\n", total_size - total_unique_size);
+        } else {
+            printf("No duplicate files found\n");
+        }
+    }
     free_file(unique_files);
 }
         

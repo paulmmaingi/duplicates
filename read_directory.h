@@ -68,4 +68,4 @@ extern void list_duplicates(dict *d, hash_table *ht);
 extern bool is_in_printed_hashes(printed_hashes *ph, char *hash);
 
 // DEFAULT PRINTING FUNCTION
-extern void default_print(hash_table *ht, dict *d);
+extern void default_print(hash_table *ht, dict *d, option_list *ol);
