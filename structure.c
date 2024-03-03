@@ -2,7 +2,7 @@
 
 // FUNCTION DEFINITIONS
 
-file *new_file(char *name, char *path, size_t size) {
+file *new_file(char *name, char *path, size_t size, long int inode) {
     file *f = malloc(sizeof(file));
     CHECK_ALLOC(f);
     f->name = strdup(name);
@@ -11,6 +11,7 @@ file *new_file(char *name, char *path, size_t size) {
     CHECK_ALLOC(f->path);
     f->hash = "";
     f->size = size;
+    f->inode = inode;
     f->next = NULL;
     return f;
 }
@@ -20,6 +21,7 @@ void print_file(file *f) {
     printf("file_path: %s\n", f->path);
     printf("file_hash: %s\n", f->hash);
     printf("file_size: %ld bytes\n", f->size);
+    printf("file_inode: %ld\n", f->inode);
     if(f->next != NULL) {
         printf("next_file: %s\n", f->next->name);
     } else {

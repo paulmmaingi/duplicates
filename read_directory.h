@@ -4,12 +4,13 @@
 
 // DATA STRUCTURES
 
-// DICTIONARY LIKE STRUCT TO STORE FILE INFO IN ADDITION TO HASH_TABLE FOR QUICK LOOKUP (NAME, PATH, HASH, SIZE, NEXT)
+// DICTIONARY LIKE STRUCT TO STORE FILE INFO IN ADDITION TO HASH_TABLE FOR QUICK LOOKUP (NAME, PATH, HASH, SIZE, INODE, NEXT)
 typedef struct dict {
     char *name;
     char *path;
     char *hash;
     size_t size;
+    long int inode;
     struct dict *next;
 } dict;
 

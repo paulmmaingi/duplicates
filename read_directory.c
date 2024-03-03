@@ -41,6 +41,7 @@ void add_file_to_dict(dict *d, file *f) {
         d->hash = strdup(f->hash);
         CHECK_ALLOC(d->hash);
         d->size = f->size;
+        d->inode = f->inode;
         d->next = NULL;
         return;
     }
@@ -53,6 +54,7 @@ void add_file_to_dict(dict *d, file *f) {
     d1->hash = strdup(f->hash);
     CHECK_ALLOC(d1->hash);
     d1->size = f->size;
+    d1->inode = f->inode;
     d1->next = d->next;
     d->next = d1;
 }
@@ -65,6 +67,7 @@ void print_dict(dict *d) {
         printf("file_path: %s\n", d1->path);
         printf("file_hash: %s\n", d1->hash);
         printf("file_size: %ld bytes\n", d1->size);
+        printf("file_inode: %ld\n", d1->inode);
         printf("\n");
         d1 = d1->next;
     }
@@ -116,7 +119,7 @@ void read_directory(char *path, hash_table *ht, option_list *ol, dict *d) {
             if(is_hidden_file(entry->d_name) && get_option(ol, 'a') == NULL) {
                 continue;
             }
-            file *f = new_file(entry->d_name, fullpath, sb.st_size);
+            file *f = new_file(entry->d_name, fullpath, sb.st_size, sb.st_ino);
             add_file_to_hash_table(ht, f);
             add_file_to_dict(d, f);    
         }
@@ -133,7 +136,7 @@ file *get_files_with_hash(hash_table *ht, char *hash) {
     file *files = NULL;
     while(f != NULL) {
         if(strcmp(f->hash, hash) == 0) {
-            file *f1 = new_file(f->name, f->path, f->size);
+            file *f1 = new_file(f->name, f->path, f->size, f->inode);
             f1->hash = strdup(f->hash);
             CHECK_ALLOC(f1->hash);
             f1->next = files;
@@ -149,7 +152,7 @@ file *get_files_from_dict(dict *d, char *name) {
     dict *d1 = d;
     while(d1 != NULL) {
         if(strcmp(d1->name, name) == 0) {
-            file *f = new_file(d1->name, d1->path, 0);
+            file *f = new_file(d1->name, d1->path, d1->size, d1->inode);
             f->hash = d1->hash;
             f->next = files;
             files = f;
@@ -226,7 +229,7 @@ file *get_unique_files(hash_table *ht, dict *d) {
     dict *d1 = d;
     while(d1 != NULL) {
         if(!is_in_printed_hashes(seen_files, d1->hash)) {
-            file *f1 = new_file(d1->name, d1->path, d1->size);
+            file *f1 = new_file(d1->name, d1->path, d1->size, d1->inode);
             f1->hash = strdup(d1->hash);
             CHECK_ALLOC(f1->hash);
             f1->next = unique_files;
@@ -275,15 +278,29 @@ void default_print(hash_table *ht, dict *d) {
     }
     printf("Number of files found: %d\n", num_files);
 
-    // WORK OUT TOTAL SIZE OF FILES
+    // WORK OUT TOTAL SIZE OF FILES (ONLY INCLUDE HARD LINKED FILES ONCE)
     size_t total_size = 0;
-
+    ino_t *inode_array = calloc(num_files, sizeof(ino_t));
+    CHECK_ALLOC(inode_array);
+    int inode_count = 0;
     dict *d1 = d;
     while(d1 != NULL) {
-        total_size += d1->size;
+        bool found = false;
+        for(int i = 0; i < inode_count; i++) {
+            if(inode_array[i] == d1->inode) {
+                found = true;
+                break;
+            }
+        }
+        if(!found) {
+            inode_array[inode_count] = d1->inode;
+            inode_count++;
+            total_size += d1->size;
+        }
         d1 = d1->next;
     }
-    printf("Total size of files found: %ld bytes\n", total_size);
+    free(inode_array);
+    printf("Total size of files found: %ld bytes, %ld KB, %ld MB\n", total_size, total_size/1024, total_size/1024/1024);
     
     // WORK OUT NUMBER OF UNIQUE FILES, ADD TO UNIQUE FILES ARRAY
     file *unique_files = get_unique_files(ht, d);
@@ -298,7 +315,7 @@ void default_print(hash_table *ht, dict *d) {
         f = f->next;
     }
     printf("Number of unique files found: %d\n", num_unique_files);
-    printf("Total size of unique files found: %ld bytes\n", total_unique_size);
+    printf("Total size of unique files found: %ld bytes, %ld KB, %ld MB\n", total_unique_size, total_unique_size/1024, total_unique_size/1024/1024);
     free_file(unique_files);
 }
         

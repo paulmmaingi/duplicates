@@ -1,5 +1,5 @@
 #include "duplicates.h"
-// need to add delete also handle collisions in hash table and test and debug
+// need to add delete by linking and also removing links also handle collisions in hash table and test and debug
 struct option long_options[] = {
     {"help", no_argument, NULL, 'h'},  // works
     {"recursive", no_argument, NULL, 'r'}, // works
@@ -26,6 +26,11 @@ void usage(char *progname) {
     fprintf(stderr, "  -l, --list\t\tList all duplicate files\n");
     fprintf(stderr, "  -x, --delete\t\tDelete all duplicate files\n");
     exit(EXIT_FAILURE);
+}
+
+void debug(hash_table *ht, dict *d) {
+    print_hash_table(ht);
+    print_dict(d);
 }
 
 
@@ -101,6 +106,7 @@ int main(int argc, char *argv[]) {
         list_duplicates(d, ht);
     }
 
+    // debug(ht, d);
 
     free_dict(d);
     free_hash_table(ht);

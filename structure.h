@@ -17,12 +17,13 @@ extern char *strdup(const char *s);
 
 // DATA STRUCTURES
 
-// FILE STRUCTURE (NAME, PATH, HASH, SIZE, NEXT)
+// FILE STRUCTURE (NAME, PATH, HASH, SIZE, INODE, NEXT)
 typedef struct file {
     char *name;
     char *path;
     char *hash;
     size_t size;
+    long int inode;
     struct file *next;
 } file;
 
@@ -60,7 +61,7 @@ typedef struct option_list{
 // FUNCTION PROTOTYPES
 
 // CREATE A NEW FILE STRUCTURE
-extern file *new_file(char *name, char *path, size_t size);
+extern file *new_file(char *name, char *path, size_t size, long int inode);
 
 // PRINT THE CONTENTS OF A FILE STRUCTURE
 extern void print_file(file *f);
