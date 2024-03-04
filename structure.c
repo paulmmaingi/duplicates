@@ -36,6 +36,15 @@ void free_file(file *f) {
     free(f);
 }
 
+void free_file_array(file *f) {
+    file *temp;
+    while(f != NULL) {
+        temp = f;
+        f = f->next;
+        free_file(temp);
+    }
+}
+
 hash_table *new_hash_table(int size) {
     hash_table *ht = malloc(sizeof(hash_table));
     CHECK_ALLOC(ht);

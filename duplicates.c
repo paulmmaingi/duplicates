@@ -1,5 +1,4 @@
 #include "duplicates.h"
-// need to add delete by linking and also removing links also handle collisions in hash table and test and debug
 struct option long_options[] = {
     {"help", no_argument, NULL, 'h'},  // works
     {"recursive", no_argument, NULL, 'r'}, // works
@@ -76,15 +75,26 @@ int main(int argc, char *argv[]) {
     }
 
     // print_option_list(ol);
-    
 
-    hash_table *ht = new_hash_table(5); // prime number avoids collisions
+    // prime number avoids collisions
+    int hash_table_size = 997;
+
+    hash_table *ht = new_hash_table(hash_table_size);
     dict *d = calloc(1, sizeof(dict));
 
     // for loop to read all directories provided
     for(int i = optind; i < argc; i++) {
         read_directory(argv[i], ht, ol, d);
     }
+    // Check if no entries and return
+    if(d->name == NULL) {
+        printf("No files found in the given directories\n");
+        free_hash_table(ht);
+        free_dict(d);
+        free_option_list(ol);
+        return 0;
+    }
+
     if(get_option(ol, 'd') == NULL && get_option(ol, 'f') == NULL && get_option(ol, 'l') == NULL && get_option(ol, 'm') == NULL){
         default_print(ht, d, ol);
     }
@@ -105,6 +115,25 @@ int main(int argc, char *argv[]) {
     }
     if(get_option(ol, 'l') != NULL) {
         list_duplicates(d, ht);
+    }
+    if(get_option(ol, 'm') != NULL) {
+        printf("BEFORE MINIMISE:\n\n");
+        list_duplicates(d, ht);
+        minimise(ht, d);
+        // will need to reread the directory to update the hash table
+        free_hash_table(ht);
+        free_dict(d);
+        ht = new_hash_table(hash_table_size);
+        d = calloc(1, sizeof(dict));
+        for(int i = optind; i < argc; i++) {
+            read_directory(argv[i], ht, ol, d);
+        }
+        printf("AFTER MINIMISE:\n\n");
+        list_duplicates(d, ht);
+        free_hash_table(ht);
+        free_dict(d);
+        free_option_list(ol);
+        return 0;
     }
 
     // debug(ht, d, 1);

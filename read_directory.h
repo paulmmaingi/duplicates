@@ -69,3 +69,6 @@ extern bool is_in_printed_hashes(printed_hashes *ph, char *hash);
 
 // DEFAULT PRINTING FUNCTION
 extern void default_print(hash_table *ht, dict *d, option_list *ol);
+
+// MINIMISING FUNCTION (UNLINKS THE FILES AND CREATES HARD LINKS WITH THE SAME NAME)
+extern void minimise(hash_table *ht, dict *d);

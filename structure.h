@@ -69,6 +69,9 @@ extern void print_file(file *f);
 // FREE THE MEMORY ALLOCATED FOR A FILE STRUCTURE
 extern void free_file(file *f);
 
+// FREE A FILE ARRAY
+extern void free_file_array(file *f);
+
 // CREATE A NEW HASH TABLE
 extern hash_table *new_hash_table(int size);
 

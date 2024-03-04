@@ -187,6 +187,7 @@ file *remove_file_from_array(file *files, char *path) {
         return next_file;
     }
 
+    // otherwise file is later in linked list
     file *f1 = files;
     file *f2 = files->next;
     while(f2 != NULL) {
@@ -299,9 +300,10 @@ void list_duplicates(dict *d, hash_table *ht) {
             printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
             set++;
         }
+        free_file_array(f1);
         f = f->next;
     }
-    free_file(unique_files);
+    free_file_array(unique_files);
 }
 
 void default_print(hash_table *ht, dict *d, option_list *ol) {
@@ -359,12 +361,32 @@ void default_print(hash_table *ht, dict *d, option_list *ol) {
 
     // QUIET MODE
     if(quiet == 1) {
-        if(num_files > num_unique_files) {
-            printf("Duplicate files found\n%ld bytes wasted\n", total_size - total_unique_size);
+        if(total_size > total_unique_size) {
+            printf("Duplicate files found\n%ld bytes wasted\n%d unique files, %d total files\n", total_size - total_unique_size, num_unique_files, num_files);
         } else {
-            printf("No duplicate files found\n");
+            if(num_files > num_unique_files) {
+                printf("No duplicate files found but %d filenames are hard linked\n%d unique files, %d total files\n", num_files - num_unique_files, num_unique_files, num_files);
+            } else {
+                printf("No duplicate files found\n%d unique files, %d total files\n", num_unique_files, num_files);
+            }
         }
     }
-    free_file(unique_files);
+    free_file_array(unique_files);
 }
         
+void minimise(hash_table *ht, dict *d) {
+    file *unique_files = get_unique_files(ht, d);
+    file *f = unique_files;
+    while(f != NULL) {
+        file *f1 = remove_file_from_array(get_files_with_hash(ht, f->hash), f->path);
+        while(f1 != NULL) {
+            unlink(f1->path);
+            link(f->path, f1->path);
+            f1 = f1->next;
+        }
+        free_file_array(f1);
+        f = f->next;
+    }
+    free_file_array(unique_files);
+}
+    
