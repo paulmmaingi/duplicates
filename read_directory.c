@@ -1,3 +1,6 @@
+// WRITTEN BY: PAUL MAINGI 
+// 23/02/24
+
 #include "read_directory.h"
 
 // FUNCTION DEFINITIONS
