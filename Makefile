@@ -30,5 +30,7 @@ fullclean: clean
 
 .PHONY: check-leaks
 
+DIRS ?= test1 test2
+
 check-leaks: $(EXEC)
-	valgrind --leak-check=full ./$(EXEC)
+	valgrind -s --leak-check=full ./$(EXEC) $(DIRS) -a -r -d hello -f world -d world -f hello

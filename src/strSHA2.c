@@ -29,12 +29,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
+#include "headers/strSHA2.h"
 
 #ifndef uint8
 #define uint8  unsigned char
@@ -330,7 +325,9 @@ char *strSHA2(char *filename)
 	    s += 2;
 	}
 	*s	= '\0';
-	return strdup(str);
+    char *rv = strdup(str);
+    CHECK_ALLOC(rv);
+    return rv;
     }
     return NULL;
 }

@@ -2,7 +2,8 @@
 #define DATA_STRUCTS_H
 
 
-#include "duplicates.h"
+#include "base.h"
+
 #include <sys/types.h>
 
 
@@ -33,6 +34,19 @@ typedef struct hashTable {
     int size;
 } hashTable;
 
+// Option struct (flag, args, numArgs)
+typedef struct _option {
+    char flag;
+    char **args;
+    int numArgs;
+} _option;
+
+// Struct to store the command line options and their args (options, numOptions)
+typedef struct optionList {
+    _option *options;
+    int numOptions;
+} optionList;
+
 
 // FUNCTION PROTOTYPES
 
@@ -56,6 +70,21 @@ extern void printHashTable(hashTable *ht);
 
 // Function to free the memory allocated for a hashTable struct
 extern void freeHashTable(hashTable *ht);
+
+// Function to initialize a new optionList struct
+extern optionList *initOptionList();
+
+// Function to print the contents of an optionList struct
+extern void printOptionList(optionList *optList);
+
+// Function to free the memory allocated for an optionList struct
+extern void freeOptionList(optionList *optList);
+
+// Function to get an option from an optionList struct
+extern _option *getOption(optionList *optList, char flag);
+
+// Function to add a new option to an optionList struct
+extern bool addOption(optionList *optList, char flag, char *arg);
 
 
 #endif // DATA_STRUCTS_H
