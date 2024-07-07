@@ -70,18 +70,23 @@ int main(int argc, char *argv[]) {
 
     printOptionList(options);
 
-    hashTable *ht = initHashTable(5);
+    hashTable *ht = initHashTable(HASH_TABLE_SIZE);
+    SetCollection *sc = initSetCollection();
+
     if (ht == NULL) {
         fprintf(stderr, "Error: Cannot allocate memory for hash table\n");
         exit(EXIT_FAILURE);
     }
 
     for (int i = optind; i < argc; i++) {
-        readDir(argv[i], ht, options);
+        readDir(argv[i], ht, sc, options);
     }
 
     printHashTable(ht);
+    printSetCollection(sc);
+
     freeHashTable(ht);
+    freeSetCollection(sc);
 
     freeOptionList(options);
 

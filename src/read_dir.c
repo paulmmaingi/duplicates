@@ -14,7 +14,7 @@ bool isHidden(char *filename) {
     return filename[0] == '.';
 }
 
-bool addFile(hashTable *ht, fileInfo *file) {
+bool addFileHashTable(hashTable *ht, fileInfo *file) {
     char *fileHash = strSHA2(file->path);
     if (fileHash == NULL) {
         return false;
@@ -33,7 +33,85 @@ bool addFile(hashTable *ht, fileInfo *file) {
     return true;
 }
 
-void readDir(char *dirPath, hashTable *ht, optionList *optList) {
+Set *initSet() {
+    Set *newSet = calloc(1, sizeof(Set));
+    CHECK_ALLOC(newSet);
+    return newSet;
+}
+
+SetCollection *initSetCollection() {
+    SetCollection *sc = calloc(1, sizeof(SetCollection));
+    CHECK_ALLOC(sc);
+    return sc;
+}
+
+bool addFileSet(SetCollection *sc, fileInfo *file) {
+    char *fileHash = file->hash;
+    if (fileHash == NULL) {
+        return false;
+    }
+    for (int i = 0; i < sc->numSets; i++) {
+        if (strcmp(sc->sets[i]->hash, fileHash) == 0) {
+            sc->sets[i]->numFiles++;
+            sc->sets[i]->files = realloc(sc->sets[i]->files, sc->sets[i]->numFiles * sizeof(fileInfo *));
+            CHECK_ALLOC(sc->sets[i]->files);
+            sc->sets[i]->files[sc->sets[i]->numFiles - 1] = file;
+            return true;
+        }
+    }
+    Set *newSet = initSet();
+    if (newSet == NULL) {
+        return false;
+    }
+    newSet->hash = fileHash;
+    newSet->files = calloc(1, sizeof(fileInfo *));
+    CHECK_ALLOC(newSet->files);
+    newSet->files[0] = file;
+    newSet->numFiles = 1;
+    sc->sets = realloc(sc->sets, (sc->numSets + 1) * sizeof(Set *));
+    CHECK_ALLOC(sc->sets);
+    sc->sets[sc->numSets] = newSet;
+    sc->numSets++;
+    return true;
+}
+
+void freeSet(Set *set) {
+    if (set != NULL) {
+        if (set->files != NULL) {
+            free(set->files);
+        }
+        free(set);
+    }
+}
+
+void freeSetCollection(SetCollection *sc) {
+    if (sc != NULL) {
+        if (sc->sets != NULL) {
+            for (int i = 0; i < sc->numSets; i++) {
+                freeSet(sc->sets[i]);
+            }
+            free(sc->sets);
+        }
+        free(sc);
+    }
+}
+
+void printSetCollection(SetCollection *sc) {
+    printf("SET COLLECTION:\n\n");
+    for (int i = 0; i < sc->numSets; i++) {
+        printf("Set %d (%d) [%s]:\n", i + 1, sc->sets[i]->numFiles, sc->sets[i]->hash);
+        printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+        for (int j = 0; j < sc->sets[i]->numFiles; j++) {
+            printFileInfo(sc->sets[i]->files[j]);
+            printf("\n");
+        }
+        printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+        printf("\n");
+    }
+    printf("-------------------------------------------------------------------------------------\n");
+}
+
+void readDir(char *dirPath, hashTable *ht, SetCollection *sc, optionList *optList) {
     DIR *dir = opendir(dirPath);
     if (dir == NULL) {
         perror(dirPath);
@@ -64,7 +142,7 @@ void readDir(char *dirPath, hashTable *ht, optionList *optList) {
         if (S_ISDIR(fileStatBuf.st_mode)) {
             // if the recursive flag is set, recursively read the directory
             if (getOption(optList, 'r') != NULL) {
-                readDir(fullPath, ht, optList);
+                readDir(fullPath, ht, sc, optList);
             }
         } 
         // if entry is a regular file
@@ -80,8 +158,12 @@ void readDir(char *dirPath, hashTable *ht, optionList *optList) {
                 free(fullPath);
                 continue;
             }
-            if (!addFile(ht, newFile)) {
+            if (!addFileHashTable(ht, newFile)) {
                 fprintf(stderr, "Error: Cannot add file %s to hash table\n", fullPath);
+                freeFileInfo(newFile);
+            }
+            if (!addFileSet(sc, newFile)) {
+                fprintf(stderr, "Error: Cannot add file %s to set collection\n", fullPath);
                 freeFileInfo(newFile);
             }
         }

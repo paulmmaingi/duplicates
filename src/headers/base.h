@@ -14,5 +14,6 @@
 // Some Macros
 #define CHECK_ALLOC(ptr) if (ptr == NULL) { perror(__func__); exit(1); }
 
+#define HASH_TABLE_SIZE 5
 
 #endif // BASE_H
