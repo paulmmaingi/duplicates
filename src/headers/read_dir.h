@@ -57,5 +57,8 @@ extern void printSetCollection(SetCollection *sc);
 // Function to read a directory and add files to the hash table
 extern void readDir(char *dirPath, hashTable *ht, SetCollection *sc, optionList *optList);
 
+// Function for the default action of the program
+extern void defaultPrint(SetCollection *sc, optionList *optList);
+
 
 #endif // READ_DIR_H

@@ -20,7 +20,7 @@ void usage(char *progname) {
     fprintf(stderr, "  -h, --help\t\tDisplay this help message\n");
     fprintf(stderr, "  -r, --recursive\tSearch directories recursively\n");
     fprintf(stderr, "  -a, --hidden\t\tSearch all files, including hidden files\n");
-    fprintf(stderr, "  -q, --quiet\t\tDo not print anything to the standard output\n");
+    fprintf(stderr, "  -q, --quiet\t\tPrint minimal output\n");
     fprintf(stderr, "  -f, --file <file>\tOnly search for files with the given name\n");
     fprintf(stderr, "  -d, --hash <hash>\tOnly search for files with the given hash\n");
     fprintf(stderr, "  -l, --list\t\tList all duplicate files\n");
@@ -39,6 +39,7 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt_long(argc, argv, OPTLIST, long_options, NULL)) != -1) {
         switch (opt) {
             case 'h':
+                freeOptionList(options);
                 usage(progname);
                 break;
             case 'r':
@@ -63,33 +64,28 @@ int main(int argc, char *argv[]) {
                 addOption(options, 'm', NULL);
                 break;
             default:
+                freeOptionList(options);
                 usage(progname);
                 break;
         }
     }
 
-    printOptionList(options);
-
     hashTable *ht = initHashTable(HASH_TABLE_SIZE);
     SetCollection *sc = initSetCollection();
-
-    if (ht == NULL) {
-        fprintf(stderr, "Error: Cannot allocate memory for hash table\n");
-        exit(EXIT_FAILURE);
-    }
 
     for (int i = optind; i < argc; i++) {
         readDir(argv[i], ht, sc, options);
     }
 
-    printHashTable(ht);
-    printSetCollection(sc);
+    // printOptionList(options);
+    // printHashTable(ht);
+    // printSetCollection(sc);
+
+    defaultPrint(sc, options);
 
     freeHashTable(ht);
     freeSetCollection(sc);
-
     freeOptionList(options);
-
 
     return 0;
 }

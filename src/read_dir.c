@@ -60,9 +60,6 @@ bool addFileSet(SetCollection *sc, fileInfo *file) {
         }
     }
     Set *newSet = initSet();
-    if (newSet == NULL) {
-        return false;
-    }
     newSet->hash = fileHash;
     newSet->files = calloc(1, sizeof(fileInfo *));
     CHECK_ALLOC(newSet->files);
@@ -115,6 +112,9 @@ void readDir(char *dirPath, hashTable *ht, SetCollection *sc, optionList *optLis
     DIR *dir = opendir(dirPath);
     if (dir == NULL) {
         perror(dirPath);
+        freeHashTable(ht);
+        freeSetCollection(sc);
+        freeOptionList(optList);
         exit(EXIT_FAILURE);        
     }
 
@@ -153,11 +153,7 @@ void readDir(char *dirPath, hashTable *ht, SetCollection *sc, optionList *optLis
                 continue;
             }
             fileInfo *newFile = initFileInfo(entry->d_name, fullPath, fileStatBuf.st_size, fileStatBuf.st_ino);
-            if (newFile == NULL) {
-                fprintf(stderr, "Error: Cannot allocate memory for file %s\n", fullPath);
-                free(fullPath);
-                continue;
-            }
+
             if (!addFileHashTable(ht, newFile)) {
                 fprintf(stderr, "Error: Cannot add file %s to hash table\n", fullPath);
                 freeFileInfo(newFile);
@@ -170,4 +166,34 @@ void readDir(char *dirPath, hashTable *ht, SetCollection *sc, optionList *optLis
         free(fullPath);
     }
     closedir(dir);
+}
+
+void defaultPrint(SetCollection *sc, optionList *optList) {
+    int totalFiles = 0;
+    size_t totalSize = 0;
+    int totalUniqueFiles = 0;
+    size_t totalUniqueSize = 0;
+    for (int i = 0; i < sc->numSets; i++) {
+        totalFiles += sc->sets[i]->numFiles;
+        totalSize += sc->sets[i]->files[0]->size * sc->sets[i]->numFiles;
+        totalUniqueFiles++;
+        totalUniqueSize += sc->sets[i]->files[0]->size;
+    }
+    if (getOption(optList, 'q') == NULL) {
+        printf("Total files found: %d\n", totalFiles);
+        printf("Total size of all files found: %zu bytes ~ %zu KB ~ %zu MB\n", totalSize, totalSize / 1024, totalSize / 1024 / 1024);
+        printf("Total unique files found: %d\n", totalUniqueFiles);
+        printf("Total size of unique files found: %zu bytes ~ %zu KB ~ %zu MB\n", totalUniqueSize, totalUniqueSize / 1024, totalUniqueSize / 1024 / 1024);
+        totalSize > totalUniqueSize ? printf("Space savings: %zu bytes ~ %zu KB ~ %zu MB (%.2f%%)\n", totalSize - totalUniqueSize, (totalSize - totalUniqueSize) / 1024, (totalSize - totalUniqueSize) / 1024 / 1024, (double)(totalSize - totalUniqueSize) / totalSize * 100) : printf("No space savings\n");
+    } else {
+        if (totalSize > totalUniqueSize) {
+            printf("Duplicate files found. Can save %zu bytes ~ %zu KB ~ %zu MB (%.2f%% space savings) [redundant files: %d] [unique files: %d, total files: %d]\n", totalSize - totalUniqueSize, (totalSize - totalUniqueSize) / 1024, (totalSize - totalUniqueSize) / 1024 / 1024, (double)(totalSize - totalUniqueSize) / totalSize * 100, totalFiles - totalUniqueFiles, totalUniqueFiles, totalFiles);
+        } else {
+            if (totalFiles > totalUniqueFiles) {
+                printf("No duplicate files found. %d files are hard linked. [unique files: %d, total files: %d]\n", totalFiles - totalUniqueFiles, totalUniqueFiles, totalFiles);
+            } else {
+                printf("No duplicate files found. [unique files: %d, total files: %d]\n", totalUniqueFiles, totalFiles);
+            }
+        }
+    }
 }

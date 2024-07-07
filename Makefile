@@ -33,4 +33,4 @@ fullclean: clean
 DIRS ?= test1 test2
 
 check-leaks: $(EXEC)
-	valgrind -s --leak-check=full ./$(EXEC) $(DIRS) -a -r -d hello -f world -d world -f hello
+	valgrind -s --leak-check=full ./$(EXEC) $(DIRS) -a -r
