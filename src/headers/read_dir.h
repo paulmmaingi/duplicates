@@ -60,5 +60,8 @@ extern void readDir(char *dirPath, hashTable *ht, SetCollection *sc, optionList 
 // Function for the default action of the program
 extern void defaultPrint(SetCollection *sc, optionList *optList);
 
+// Function to list the relative pathnames of all files with the given hash
+extern void listDuplicatesWithHash(char *hash, hashTable *ht);
+
 
 #endif // READ_DIR_H

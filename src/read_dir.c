@@ -197,3 +197,21 @@ void defaultPrint(SetCollection *sc, optionList *optList) {
         }
     }
 }
+
+void listDuplicatesWithHash(char *hash, hashTable *ht) {
+    unsigned long index = hash_function(hash) % ht->size;
+    fileInfo *current = ht->buckets[index]->head;
+    if (current == NULL) {
+        printf("No duplicate files with hash %s found\n", hash);
+        return;
+    } else{
+        printf("DUPLICATE FILES WITH HASH %s:\n\n", hash);
+        while (current != NULL) {
+            if (strcmp(current->hash, hash) == 0) {
+                printf("%s\t[inode: %lu, size: %zu bytes]\n", current->path, current->inode, current->size);
+                printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+            }
+            current = current->next;
+        }   
+    }
+}
