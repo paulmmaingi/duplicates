@@ -66,5 +66,8 @@ extern void listDuplicatesWithHash(char *hash, hashTable *ht);
 // Function to list the relative pathnames of all files duplicates to the file with the given name
 extern void listDuplicatesToFileNamed(char *filename, SetCollection *sc, hashTable *ht);
 
+// Function to list all the sets of duplicate files
+extern void listAllDuplicates(SetCollection *sc);
+
 
 #endif // READ_DIR_H

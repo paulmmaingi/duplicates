@@ -249,3 +249,19 @@ void listDuplicatesToFileNamed(char *filename, SetCollection *sc, hashTable *ht)
         return;
     }
 }
+
+void listAllDuplicates(SetCollection *sc) {
+    printf("ALL DUPLICATE FILES:\n\n");
+    for (int i = 0; i < sc->numSets; i++) {
+        if (sc->sets[i]->numFiles > 1) {
+            printf("Set %d (%d) [%s]:\n", i + 1, sc->sets[i]->numFiles, sc->sets[i]->hash);
+            printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+            for (int j = 0; j < sc->sets[i]->numFiles; j++) {
+                printf("%s\t[inode: %lu, size: %zu bytes ~ %zu KB ~ %zu MB]\n", sc->sets[i]->files[j]->path, sc->sets[i]->files[j]->inode, sc->sets[i]->files[j]->size, sc->sets[i]->files[j]->size / 1024, sc->sets[i]->files[j]->size / 1024 / 1024);
+            }
+            printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+            printf("\n");
+        }
+    }
+    printf("-------------------------------------------------------------------------------------\n");
+}

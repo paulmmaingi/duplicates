@@ -95,6 +95,10 @@ int main(int argc, char *argv[]) {
         }
     }
     
+    if (getOption(options, 'l') != NULL) {
+        listAllDuplicates(sc);
+    }
+    
     // printOptionList(options);
     // printHashTable(ht);
     // printSetCollection(sc);
