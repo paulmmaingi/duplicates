@@ -175,10 +175,29 @@ void defaultPrint(SetCollection *sc, optionList *optList) {
     size_t totalUniqueSize = 0;
     for (int i = 0; i < sc->numSets; i++) {
         totalFiles += sc->sets[i]->numFiles;
-        totalSize += sc->sets[i]->files[0]->size * sc->sets[i]->numFiles;
         totalUniqueFiles++;
         totalUniqueSize += sc->sets[i]->files[0]->size;
+
+        ino_t *encounteredInodes = calloc(sc->sets[i]->numFiles, sizeof(ino_t));
+        CHECK_ALLOC(encounteredInodes);
+        int numEncounteredInodes = 0;
+        for (int j = 0; j < sc->sets[i]->numFiles; j++) {
+            bool isEncountered = false;
+            for (int k = 0; k < numEncounteredInodes; k++) {
+                if (encounteredInodes[k] == sc->sets[i]->files[j]->inode) {
+                    isEncountered = true;
+                    break;
+                }
+            }
+            if (!isEncountered) {
+                encounteredInodes[numEncounteredInodes] = sc->sets[i]->files[j]->inode;
+                numEncounteredInodes++;
+            }
+        }
+        free(encounteredInodes);
+        totalSize += sc->sets[i]->files[0]->size * numEncounteredInodes;
     }
+    
     if (getOption(optList, 'q') == NULL) {
         printf("Total files found: %d\n", totalFiles);
         printf("Total size of all files found: %zu bytes ~ %zu KB ~ %zu MB\n", totalSize, totalSize / 1024, totalSize / 1024 / 1024);
@@ -253,8 +272,29 @@ void listDuplicatesToFileNamed(char *filename, SetCollection *sc, hashTable *ht)
 void listAllDuplicates(SetCollection *sc) {
     printf("ALL DUPLICATE FILES:\n\n");
     for (int i = 0; i < sc->numSets; i++) {
+
+        ino_t *encounteredInodes = calloc(sc->sets[i]->numFiles, sizeof(ino_t));
+        CHECK_ALLOC(encounteredInodes);
+        int numEncounteredInodes = 0;
+        for (int j = 0; j < sc->sets[i]->numFiles; j++) {
+            bool isEncountered = false;
+            for (int k = 0; k < numEncounteredInodes; k++) {
+                if (encounteredInodes[k] == sc->sets[i]->files[j]->inode) {
+                    isEncountered = true;
+                    break;
+                }
+            }
+            if (!isEncountered) {
+                encounteredInodes[numEncounteredInodes] = sc->sets[i]->files[j]->inode;
+                numEncounteredInodes++;
+            }
+        }
+        free(encounteredInodes);
+
         if (sc->sets[i]->numFiles > 1) {
-            printf("Set %d (%d) [%s]:\n", i + 1, sc->sets[i]->numFiles, sc->sets[i]->hash);
+            printf("Set %d (%d) [%s]:", i + 1, sc->sets[i]->numFiles, sc->sets[i]->hash);
+            numEncounteredInodes == 1 ? printf(" all files are hard linked\n") : printf(" %d/%d files are hard linked\n", sc->sets[i]->numFiles - numEncounteredInodes + 1, sc->sets[i]->numFiles);
+            // printf("numEncounteredInodes: %d, numfiles: %d\n", numEncounteredInodes, sc->sets[i]->numFiles);
             printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
             for (int j = 0; j < sc->sets[i]->numFiles; j++) {
                 printf("%s\t[inode: %lu, size: %zu bytes ~ %zu KB ~ %zu MB]\n", sc->sets[i]->files[j]->path, sc->sets[i]->files[j]->inode, sc->sets[i]->files[j]->size, sc->sets[i]->files[j]->size / 1024, sc->sets[i]->files[j]->size / 1024 / 1024);
@@ -267,11 +307,32 @@ void listAllDuplicates(SetCollection *sc) {
 }
 
 void minimiseMemoryUsage(SetCollection *sc) {
-    int numLinks = 0;
     size_t totalSize = 0;
-    size_t savedSize = 0;
-    for (int i = 0; i < sc->numSets; i++) {
-        totalSize += sc->sets[i]->files[0]->size * sc->sets[i]->numFiles;
+    size_t totalUniqueSize = 0;
+    int numLinks = 0;
+
+    for (int i = 0; i < sc->numSets; i++) {     
+        totalUniqueSize += sc->sets[i]->files[0]->size;
+
+        ino_t *encounteredInodes = calloc(sc->sets[i]->numFiles, sizeof(ino_t));
+        CHECK_ALLOC(encounteredInodes);
+        int numEncounteredInodes = 0;
+        for (int j = 0; j < sc->sets[i]->numFiles; j++) {
+            bool isEncountered = false;
+            for (int k = 0; k < numEncounteredInodes; k++) {
+                if (encounteredInodes[k] == sc->sets[i]->files[j]->inode) {
+                    isEncountered = true;
+                    break;
+                }
+            }
+            if (!isEncountered) {
+                encounteredInodes[numEncounteredInodes] = sc->sets[i]->files[j]->inode;
+                numEncounteredInodes++;
+            }
+        }
+        free(encounteredInodes);
+        totalSize += sc->sets[i]->files[0]->size * numEncounteredInodes;
+
         if (sc->sets[i]->numFiles > 1) {
             for (int j = 1; j < sc->sets[i]->numFiles; j++) {
                 if (sc->sets[i]->files[j]->inode != sc->sets[i]->files[0]->inode) {
@@ -281,8 +342,7 @@ void minimiseMemoryUsage(SetCollection *sc) {
                         if (link(sc->sets[i]->files[0]->path, sc->sets[i]->files[j]->path) == -1) {
                             fprintf(stderr, "Error: Cannot link file %s to %s\n", sc->sets[i]->files[0]->path, sc->sets[i]->files[j]->path);
                         }
-                        numLinks++;
-                        savedSize += sc->sets[i]->files[j]->size;                        
+                        numLinks++;                     
                     }
                 } else {
                     fprintf(stderr, "File %s is already hard linked to %s. (inode: %lu). Skipping...\n", sc->sets[i]->files[j]->path, sc->sets[i]->files[0]->path, sc->sets[i]->files[0]->inode);
@@ -295,5 +355,5 @@ void minimiseMemoryUsage(SetCollection *sc) {
         return;
     }
     printf("Total files hard linked: %d\n", numLinks);
-    printf("Space saved: %zu bytes ~ %zu KB ~ %zu MB (%.2f%%)\n", savedSize, savedSize / 1024, savedSize / 1024 / 1024, (double)savedSize / totalSize * 100);
+    printf("Space saved: %zu bytes ~ %zu KB ~ %zu MB (%.2f%%)\n", totalSize - totalUniqueSize, (totalSize - totalUniqueSize) / 1024, (totalSize - totalUniqueSize) / 1024 / 1024, (double)(totalSize - totalUniqueSize) / totalSize * 100);
 }
