@@ -69,5 +69,8 @@ extern void listDuplicatesToFileNamed(char *filename, SetCollection *sc, hashTab
 // Function to list all the sets of duplicate files
 extern void listAllDuplicates(SetCollection *sc);
 
+// Function to minimise memory usage by hard linking duplicate files
+extern void minimiseMemoryUsage(SetCollection *sc);
+
 
 #endif // READ_DIR_H

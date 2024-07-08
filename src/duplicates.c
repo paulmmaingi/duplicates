@@ -98,7 +98,12 @@ int main(int argc, char *argv[]) {
     if (getOption(options, 'l') != NULL) {
         listAllDuplicates(sc);
     }
-    
+
+    if (getOption(options, 'm') != NULL) {
+        minimiseMemoryUsage(sc);
+    }
+
+
     // printOptionList(options);
     // printHashTable(ht);
     // printSetCollection(sc);

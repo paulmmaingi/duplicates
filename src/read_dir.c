@@ -184,10 +184,10 @@ void defaultPrint(SetCollection *sc, optionList *optList) {
         printf("Total size of all files found: %zu bytes ~ %zu KB ~ %zu MB\n", totalSize, totalSize / 1024, totalSize / 1024 / 1024);
         printf("Total unique files found: %d\n", totalUniqueFiles);
         printf("Total size of unique files found: %zu bytes ~ %zu KB ~ %zu MB\n", totalUniqueSize, totalUniqueSize / 1024, totalUniqueSize / 1024 / 1024);
-        totalSize > totalUniqueSize ? printf("Space savings: %zu bytes ~ %zu KB ~ %zu MB (%.2f%%)\n", totalSize - totalUniqueSize, (totalSize - totalUniqueSize) / 1024, (totalSize - totalUniqueSize) / 1024 / 1024, (double)(totalSize - totalUniqueSize) / totalSize * 100) : printf("No space savings\n");
+        totalSize > totalUniqueSize ? printf("Potential space savings: %zu bytes ~ %zu KB ~ %zu MB (%.2f%%)\n", totalSize - totalUniqueSize, (totalSize - totalUniqueSize) / 1024, (totalSize - totalUniqueSize) / 1024 / 1024, (double)(totalSize - totalUniqueSize) / totalSize * 100) : printf("No potential space savings\n");
     } else {
         if (totalSize > totalUniqueSize) {
-            printf("Duplicate files found. Can save %zu bytes ~ %zu KB ~ %zu MB (%.2f%% space savings) [redundant files: %d] [unique files: %d, total files: %d]\n", totalSize - totalUniqueSize, (totalSize - totalUniqueSize) / 1024, (totalSize - totalUniqueSize) / 1024 / 1024, (double)(totalSize - totalUniqueSize) / totalSize * 100, totalFiles - totalUniqueFiles, totalUniqueFiles, totalFiles);
+            printf("Duplicate files found. Can save %zu bytes ~ %zu KB ~ %zu MB (%.2f%% potential space savings) [redundant files: %d] [unique files: %d, total files: %d]\n", totalSize - totalUniqueSize, (totalSize - totalUniqueSize) / 1024, (totalSize - totalUniqueSize) / 1024 / 1024, (double)(totalSize - totalUniqueSize) / totalSize * 100, totalFiles - totalUniqueFiles, totalUniqueFiles, totalFiles);
         } else {
             if (totalFiles > totalUniqueFiles) {
                 printf("No duplicate files found. %d files are hard linked. [unique files: %d, total files: %d]\n", totalFiles - totalUniqueFiles, totalUniqueFiles, totalFiles);
@@ -264,4 +264,36 @@ void listAllDuplicates(SetCollection *sc) {
         }
     }
     printf("-------------------------------------------------------------------------------------\n");
+}
+
+void minimiseMemoryUsage(SetCollection *sc) {
+    int numLinks = 0;
+    size_t totalSize = 0;
+    size_t savedSize = 0;
+    for (int i = 0; i < sc->numSets; i++) {
+        totalSize += sc->sets[i]->files[0]->size * sc->sets[i]->numFiles;
+        if (sc->sets[i]->numFiles > 1) {
+            for (int j = 1; j < sc->sets[i]->numFiles; j++) {
+                if (sc->sets[i]->files[j]->inode != sc->sets[i]->files[0]->inode) {
+                    if (unlink(sc->sets[i]->files[j]->path) == -1) {
+                        fprintf(stderr, "Error: Cannot unlink file %s\n", sc->sets[i]->files[j]->path);
+                    } else {
+                        if (link(sc->sets[i]->files[0]->path, sc->sets[i]->files[j]->path) == -1) {
+                            fprintf(stderr, "Error: Cannot link file %s to %s\n", sc->sets[i]->files[0]->path, sc->sets[i]->files[j]->path);
+                        }
+                        numLinks++;
+                        savedSize += sc->sets[i]->files[j]->size;                        
+                    }
+                } else {
+                    fprintf(stderr, "File %s is already hard linked to %s. (inode: %lu). Skipping...\n", sc->sets[i]->files[j]->path, sc->sets[i]->files[0]->path, sc->sets[i]->files[0]->inode);
+                }
+            }
+        }
+    } 
+    if (numLinks == 0) {
+        printf("Space is already minimised\n");
+        return;
+    }
+    printf("Total files hard linked: %d\n", numLinks);
+    printf("Space saved: %zu bytes ~ %zu KB ~ %zu MB (%.2f%%)\n", savedSize, savedSize / 1024, savedSize / 1024 / 1024, (double)savedSize / totalSize * 100);
 }
