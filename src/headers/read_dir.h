@@ -63,5 +63,8 @@ extern void defaultPrint(SetCollection *sc, optionList *optList);
 // Function to list the relative pathnames of all files with the given hash
 extern void listDuplicatesWithHash(char *hash, hashTable *ht);
 
+// Function to list the relative pathnames of all files duplicates to the file with the given name
+extern void listDuplicatesToFileNamed(char *filename, SetCollection *sc, hashTable *ht);
+
 
 #endif // READ_DIR_H

@@ -208,10 +208,44 @@ void listDuplicatesWithHash(char *hash, hashTable *ht) {
         printf("DUPLICATE FILES WITH HASH %s:\n\n", hash);
         while (current != NULL) {
             if (strcmp(current->hash, hash) == 0) {
-                printf("%s\t[inode: %lu, size: %zu bytes]\n", current->path, current->inode, current->size);
+                printf("%s\t[inode: %lu, size: %zu bytes ~ %zu KB ~ %zu MB]\n", current->path, current->inode, current->size, current->size / 1024, current->size / 1024 / 1024);
                 printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
             }
             current = current->next;
         }   
+        printf("-------------------------------------------------------------------------------------\n");
+    }
+}
+
+void listDuplicatesToFileNamed(char *filename, SetCollection *sc, hashTable *ht) {
+    char *targetHash = NULL;
+    for (int i = 0; i < sc->numSets; i++) {
+        for (int j = 0; j < sc->sets[i]->numFiles; j++) {
+            if (strcmp(sc->sets[i]->files[j]->filename, filename) == 0) {
+                targetHash = sc->sets[i]->hash;
+                break;
+            }
+        }
+    }
+    if (targetHash != NULL) {
+        unsigned long index = hash_function(targetHash) % ht->size;
+        fileInfo *current = ht->buckets[index]->head;
+        if (current == NULL || current->next == NULL) {
+            printf("No duplicate files to %s found\n", filename);
+            return;
+        } else {
+            printf("DUPLICATE FILES TO %s:\n\n", filename);
+            while (current != NULL) {
+                if (strcmp(current->hash, targetHash) == 0 && strcmp(current->filename, filename) != 0) {
+                    printf("%s\t[inode: %lu, size: %zu bytes ~ %zu KB ~ %zu MB]\n", current->path, current->inode, current->size, current->size / 1024, current->size / 1024 / 1024);
+                    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+                }
+                current = current->next;
+            }
+            printf("-------------------------------------------------------------------------------------\n");
+        }
+    } else {
+        printf("No file named %s found\n", filename);
+        return;
     }
 }

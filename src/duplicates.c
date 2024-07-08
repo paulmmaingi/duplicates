@@ -77,18 +77,27 @@ int main(int argc, char *argv[]) {
         readDir(argv[i], ht, sc, options);
     }
 
+    if(getOption(options, 'd') == NULL && getOption(options, 'f') == NULL && getOption(options, 'l') == NULL && getOption(options, 'm') == NULL) {
+        defaultPrint(sc, options);
+    }
+
     _option *optd = getOption(options, 'd'); 
     if (optd != NULL) {
         for (int i = 0; i < optd->numArgs; i++) {
             listDuplicatesWithHash(optd->args[i], ht);
         }
     }
+
+    _option *optf = getOption(options, 'f');
+    if (optf != NULL) {
+        for (int i = 0; i < optf->numArgs; i++) {
+            listDuplicatesToFileNamed(optf->args[i], sc, ht);
+        }
+    }
     
     // printOptionList(options);
     // printHashTable(ht);
     // printSetCollection(sc);
-
-    // defaultPrint(sc, options);
 
     freeHashTable(ht);
     freeSetCollection(sc);
