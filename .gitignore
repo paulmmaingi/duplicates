@@ -1,4 +1,4 @@
 test*
 /duplicates
-obj
+.o
 .vscode
