@@ -1,6 +1,5 @@
 CC=gcc
-CFLAGS=-g -Wall -Werror
-
+CFLAGS=-Wall -Werror -Wextra -O2 -fsanitize=address -fno-omit-frame-pointer -g3
 SRC_DIR = src
 OBJ_DIR = obj
 
@@ -19,11 +18,15 @@ all: $(EXEC)
 $(EXEC): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $@
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
 
 clean:
 	rm -f $(OBJS)
+	rmdir $(OBJ_DIR)
 
 fullclean: clean
 	rm -f $(EXEC)
